@@ -15,7 +15,8 @@ export const App: React.FC = () => {
   const [error, setError] = useState(ErrorType.None);
   const [selectedFilterLink, setSelectedFilterLink] = useState(FilterType.All);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [deletingIds, setDeletingIds] = useState<number[]>([]);
+  const [loadingIds, setLoadingIds] = useState<number[]>([]);
+
   const inputFocusRef = useRef<HTMLInputElement>(null);
 
   const completedTodos = todos.filter(todo => todo.completed);
@@ -47,7 +48,7 @@ export const App: React.FC = () => {
   };
 
   const handleDelete = async (deleteId: number) => {
-    setDeletingIds(current => [...current, deleteId]);
+    setLoadingIds(current => [...current, deleteId]);
 
     try {
       await clientMethods.deleteTodo(deleteId);
@@ -55,7 +56,7 @@ export const App: React.FC = () => {
     } catch {
       setError(ErrorType.Delete);
     } finally {
-      setDeletingIds(current => current.filter(id => id !== deleteId));
+      setLoadingIds(current => current.filter(id => id !== deleteId));
       inputFocusRef.current?.focus();
     }
   };
@@ -63,6 +64,10 @@ export const App: React.FC = () => {
   const handleClearCompleted = () => {
     Promise.all(completedTodos.map(todo => handleDelete(todo.id)));
   };
+
+  const handleUpdate = () => {
+
+  }
 
   useEffect(() => {
     const loadTodos = async () => {
@@ -138,7 +143,7 @@ export const App: React.FC = () => {
               <TodoList
                 todos={filteredTodos}
                 onDelete={handleDelete}
-                deletingIds={deletingIds}
+                deletingIds={loadingIds}
               />
               {tempTodo && <TodoItem todo={tempTodo} isLoading />}
             </>
