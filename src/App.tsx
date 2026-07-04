@@ -65,15 +65,16 @@ export const App: React.FC = () => {
     Promise.all(completedTodos.map(todo => handleDelete(todo.id)));
   };
 
-  const handleUpdate = async (id: number, todoData?: Partial<Todo> | undefined) => {
-    setLoadingIds(current => [...current, id])
+  const handleUpdate = async (
+    id: number,
+    todoData?: Partial<Todo> | undefined,
+  ) => {
+    setLoadingIds(current => [...current, id]);
 
     try {
       await clientMethods.updateTodo(id, todoData);
       setTodos(current =>
-        current.map(todo =>
-          todo.id === id? { ...todo, ...todoData } : todo,
-        ),
+        current.map(todo => (todo.id === id ? { ...todo, ...todoData } : todo)),
       );
     } catch {
       setError(ErrorType.Update);
