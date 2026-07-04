@@ -2,14 +2,16 @@
 
 import React from 'react';
 import type { Todo } from '../../types/Todo';
+import { USER_ID } from '../../api/todos';
 
 type Props = {
   todo: Todo;
   isLoading?: boolean;
-  onDelete?: (id : number) => void
+  onDelete?: (id : number) => void;
+  handleUpdate?: (id: number, todoData?: Partial<Todo>) => void;
 }
 
-export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete }) =>{
+export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete, handleUpdate }) =>{
 
   return (
     <div data-cy="Todo" className={`todo ${todo.completed ? 'completed' : ''}`}>
@@ -19,7 +21,11 @@ export const TodoItem: React.FC<Props> = ({ todo, isLoading, onDelete }) =>{
           type="checkbox"
           className="todo__status"
           checked={todo.completed}
-          onChange={() => {}}
+          onChange={() => {
+            if ( todo.id ) {
+              handleUpdate(todo.id)
+            }
+          }}
         />
       </label>
 

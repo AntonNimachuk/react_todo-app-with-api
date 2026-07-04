@@ -65,9 +65,22 @@ export const App: React.FC = () => {
     Promise.all(completedTodos.map(todo => handleDelete(todo.id)));
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async (id: number, todoData?: Partial<Todo> | undefined) => {
+    setLoadingIds(current => [...current, id])
 
-  }
+    try {
+      await clientMethods.updateTodo(id, todoData);
+      setTodos(current =>
+        current.map(todo =>
+          todo.id === id? { ...todo, ...todoData } : todo,
+        ),
+      );
+    } catch {
+      setError(ErrorType.Update);
+    } finally {
+      setLoadingIds(current => current.filter(item => item !== id));
+    }
+  };
 
   useEffect(() => {
     const loadTodos = async () => {
@@ -143,7 +156,8 @@ export const App: React.FC = () => {
               <TodoList
                 todos={filteredTodos}
                 onDelete={handleDelete}
-                deletingIds={loadingIds}
+                loadingIds={loadingIds}
+                handleUpdate={handleUpdate}
               />
               {tempTodo && <TodoItem todo={tempTodo} isLoading />}
             </>
