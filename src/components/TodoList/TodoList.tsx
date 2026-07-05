@@ -5,9 +5,9 @@ import type { Todo } from '../../types/Todo';
 
 type Props = {
   todos : (Todo[]);
-  onDelete : ( id: number) => void;
-  loadingIds : number[]
-  handleUpdate? : ( id: number, todoData?: Partial<Todo>) => void;
+  onDelete : ( id: number) => Promise<void>;
+  loadingIds : number[];
+  handleUpdate? : ( id: number, todoData: Partial<Todo>) => Promise<void>;
 }
 
 export const TodoList: React.FC<Props> = ({ todos, onDelete, loadingIds, handleUpdate }) => (

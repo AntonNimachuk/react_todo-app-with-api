@@ -16,6 +16,7 @@ export const App: React.FC = () => {
   const [selectedFilterLink, setSelectedFilterLink] = useState(FilterType.All);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [loadingIds, setLoadingIds] = useState<number[]>([]);
+  const [toggledTodosIds, setToggledIds] = useState<number[]>([]);
 
   const inputFocusRef = useRef<HTMLInputElement>(null);
 
@@ -53,8 +54,9 @@ export const App: React.FC = () => {
     try {
       await clientMethods.deleteTodo(deleteId);
       setTodos(current => current.filter(todo => todo.id !== deleteId));
-    } catch {
+    } catch (error) {
       setError(ErrorType.Delete);
+      throw error;
     } finally {
       setLoadingIds(current => current.filter(id => id !== deleteId));
       inputFocusRef.current?.focus();
@@ -65,10 +67,7 @@ export const App: React.FC = () => {
     Promise.all(completedTodos.map(todo => handleDelete(todo.id)));
   };
 
-  const handleUpdate = async (
-    id: number,
-    todoData?: Partial<Todo> | undefined,
-  ) => {
+  const handleUpdate = async (id: number, todoData: Partial<Todo>) => {
     setLoadingIds(current => [...current, id]);
 
     try {
@@ -76,11 +75,18 @@ export const App: React.FC = () => {
       setTodos(current =>
         current.map(todo => (todo.id === id ? { ...todo, ...todoData } : todo)),
       );
-    } catch {
+    } catch (error) {
       setError(ErrorType.Update);
+      throw error;
     } finally {
       setLoadingIds(current => current.filter(item => item !== id));
     }
+  };
+
+  const handleToggling = async () => {
+    setToggledIds(current =>
+      current.filter(current => current.completed === true),
+    );
   };
 
   useEffect(() => {
@@ -140,6 +146,7 @@ export const App: React.FC = () => {
               type="button"
               className={`todoapp__toggle-all ${allTodosCompleted ? 'active' : ''}`}
               data-cy="ToggleAllButton"
+              onClick={}
             />
           )}
 
