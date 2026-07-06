@@ -16,12 +16,13 @@ export const App: React.FC = () => {
   const [selectedFilterLink, setSelectedFilterLink] = useState(FilterType.All);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [loadingIds, setLoadingIds] = useState<number[]>([]);
-  const [toggledTodosIds, setToggledIds] = useState<number[]>([]);
 
   const inputFocusRef = useRef<HTMLInputElement>(null);
 
   const completedTodos = todos.filter(todo => todo.completed);
   const activeTodos = todos.filter(todo => !todo.completed);
+  const allTodosCompleted =
+    todos.length > 0 && todos.every(todo => todo.completed);
 
   const filterLinks = [
     {
@@ -54,9 +55,9 @@ export const App: React.FC = () => {
     try {
       await clientMethods.deleteTodo(deleteId);
       setTodos(current => current.filter(todo => todo.id !== deleteId));
-    } catch (error) {
+    } catch (err) {
       setError(ErrorType.Delete);
-      throw error;
+      throw err;
     } finally {
       setLoadingIds(current => current.filter(id => id !== deleteId));
       inputFocusRef.current?.focus();
@@ -64,7 +65,9 @@ export const App: React.FC = () => {
   };
 
   const handleClearCompleted = () => {
-    Promise.all(completedTodos.map(todo => handleDelete(todo.id)));
+    Promise.all(completedTodos.map(todo => handleDelete(todo.id))).catch(
+      () => {},
+    );
   };
 
   const handleUpdate = async (id: number, todoData: Partial<Todo>) => {
@@ -75,18 +78,23 @@ export const App: React.FC = () => {
       setTodos(current =>
         current.map(todo => (todo.id === id ? { ...todo, ...todoData } : todo)),
       );
-    } catch (error) {
+    } catch (err) {
       setError(ErrorType.Update);
-      throw error;
+      throw err;
     } finally {
       setLoadingIds(current => current.filter(item => item !== id));
     }
   };
 
-  const handleToggling = async () => {
-    setToggledIds(current =>
-      current.filter(current => current.completed === true),
-    );
+  const handleToggleAll = () => {
+    const targetStatus = !allTodosCompleted;
+    const todosToUpdate = todos.filter(todo => todo.completed !== targetStatus);
+
+    Promise.all(
+      todosToUpdate.map(todo =>
+        handleUpdate(todo.id, { completed: targetStatus }),
+      ),
+    ).catch(() => {});
   };
 
   useEffect(() => {
@@ -115,8 +123,6 @@ export const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [error]);
 
-  const allTodosCompleted =
-    todos.length > 0 && todos.every(todo => todo.completed);
   let filteredTodos = todos;
 
   switch (selectedFilterLink) {
@@ -146,7 +152,7 @@ export const App: React.FC = () => {
               type="button"
               className={`todoapp__toggle-all ${allTodosCompleted ? 'active' : ''}`}
               data-cy="ToggleAllButton"
-              onClick={}
+              onClick={handleToggleAll}
             />
           )}
 
